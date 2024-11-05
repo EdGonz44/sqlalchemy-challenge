@@ -38,6 +38,7 @@ app = Flask(__name__)
 # Flask Routes
 #################################################
 @app.route("/")
+# Opening route listing possible app routes
 def welcome():
     """List all available api routes."""
     return (
@@ -50,6 +51,7 @@ def welcome():
         f"For dates, please use YYYY-MM-DD format"
 )
 
+# App route that provides precipitation data
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     "Return query results from precipitation analysis."
@@ -72,9 +74,10 @@ def precipitation():
     for date, prcp in results:
         prcp_dict[date] = prcp
         
-
+    # Return the dictionary that contains the precipitation data
     return jsonify(prcp_dict)
 
+# Route for providing list of stations reporting data
 @app.route("/api/v1.0/stations")
 def stations():
     "Return a JSON list of stations from the dataset"
@@ -89,10 +92,10 @@ def stations():
                         "name": result.name
                        }
         station_list.append(station_dict)
-
+    # Returns the station list in json format
     return jsonify(station_list)
     
-
+# Route for returning temperature observations data.
 @app.route("/api/v1.0/tobs")
 def tobs():
     "Return a JSON list of temperature observations"
@@ -102,24 +105,25 @@ def tobs():
     # Calculate the date one year from the last date in data set.
     year_ago = most_recent_date - dt.timedelta(days=365)
 
+    # Access the temperature observations from only the specified station
     results = session.query(measurement.date,measurement.tobs).\
             filter(measurement.date >= year_ago, measurement.station == 'USC00519281').\
             order_by(measurement.date)
 
-
+    
     session.close()
-
+    # Create a list that will be populated with the temperature observation data organized by date.
     tobs_list = []
     for date, tobs in results:
         tobs_dict = {"date": date,
                      "tobs": tobs
                     }
         tobs_list.append(tobs_dict)
-
+    # Returns the results in json format
     return jsonify(tobs_list)
     
 
-
+# App route that returns temperature observation starting with the user specified date.
 @app.route("/api/v1.0/<start>")
 def start(start):
 
@@ -143,6 +147,7 @@ def start(start):
     }
     return jsonify(temp_stats)
 
+# App route that returns temperature observations based on a user specified time range.
 @app.route("/api/v1.0/<start>/<end>")
 def start_end(start, end):
     try:
